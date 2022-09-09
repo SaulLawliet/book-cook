@@ -8,12 +8,22 @@
 Q: 为什么不直接制作 `Kindle` 支持格式的电子书呢?  
 A: 根据作者经验, 直接制作 `.mobi` 或 `.azw3` 的库比较少, 而且生成的电子书品质不佳.
 然而用 `.epub` 转换成 `.azw3` 则可获得最佳体验(目录、注音等).
-并且 `.epub` 也是使用最广泛的电子书格式
+并且 `.epub` 也是使用最广泛的电子书格式.
 
 ## 描述
 
 实现主要参考了 [youtube-dl](https://github.com/ytdl-org/youtube-dl),
-目标是: 支持 **多个站点**
+目标是: 支持 **多个站点**!
+
+## 使用
+
+```sh
+git clone git@github.com:SaulLawliet/book-cook.git
+cd book-cook
+pip install -r requirements.txt
+
+python -m book_cook <URL>
+```
 
 ## 支持的站点(按字母排序)
 
