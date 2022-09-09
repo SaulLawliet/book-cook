@@ -1,6 +1,6 @@
 
-from ..common import InfoExtractor
 from ... import utils
+from ..common import InfoExtractor
 
 
 class WenKu8IE(InfoExtractor):

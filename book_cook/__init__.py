@@ -3,8 +3,10 @@ import sys
 
 from .BookCook import BookCook
 
+
 def _parseOpts(argv):
     return sys.argv[1:]
+
 
 def _real_main(argv=None):
     args = _parseOpts(argv)

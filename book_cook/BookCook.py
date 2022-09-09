@@ -1,14 +1,17 @@
 import json
 import os
 import sys
-from book_cook import utils
-from .extractor import get_info_extractor, gen_extractor_classes
+
 from ebooklib import epub
 
+from book_cook import utils
+
+from .extractor import gen_extractor_classes, get_info_extractor
 
 _OUTPUT_DIR = '_output/'
 if not os.path.exists(_OUTPUT_DIR):
     os.makedirs(_OUTPUT_DIR)
+
 
 class BookCook(object):
     _ies = []
