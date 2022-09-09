@@ -29,6 +29,10 @@ python -m book_cook <URL>
 
 - [轻小说文库](https://www.wenku8.net/index.php)
 
+## 下载制作好的电子书
+
+- [Google Drive](https://drive.google.com/drive/folders/1f2_lH86DJ1Go-iWv1852mrdD_Wsn4QX5?usp=sharing)
+
 ## 其他
 
 目前站点样本仅一个, 代码的实现主要保证目前能用, 所以 `基础函数库` 不是很完善. 😛
