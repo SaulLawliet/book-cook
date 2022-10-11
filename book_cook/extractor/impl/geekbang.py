@@ -14,11 +14,13 @@ class GeekbangIE(InfoExtractor):
     """
     TODO: 代码没有格式化
     TODO: 没有解析 LaTeX
+    TODO: 本书内的链接跳转
     """
-    _VALID_URL = r'https://time.geekbang.org/column/\d+'
+
+    _VALID_URL = r'https://time.geekbang.org/(column|course/intro)/\d+'
 
     def _real_extract(self, url):
-        product_id = url.split('/')[-1]
+        product_id = url.split('?')[0].split('/')[-1]
 
         cookie_file = self._downloader.params.get('cookie_file')
         if cookie_file is None:

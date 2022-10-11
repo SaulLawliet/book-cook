@@ -28,6 +28,8 @@ python -m book_cook -h
 
 ## 支持的站点(按字母排序)
 
+> 如果是有版权的书, 一定不要传播哦❤️
+
 - [轻小说文库](https://www.wenku8.net/index.php)
 - [极客时间](https://time.geekbang.org/)
 
