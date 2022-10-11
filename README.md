@@ -8,7 +8,7 @@
 Q: 为什么不直接制作 `Kindle` 支持格式的电子书呢?  
 A: 根据作者经验, 直接制作 `.mobi` 或 `.azw3` 的库比较少, 而且生成的电子书品质不佳.
 然而用 `.epub` 转换成 `.azw3` 则可获得最佳体验(目录、注音等).
-并且 `.epub` 也是使用最广泛的电子书格式. 
+并且 `.epub` 也是使用最广泛的电子书格式.
 转化工具推荐使用 `ebook-convert`.
 
 ## 描述
@@ -23,12 +23,13 @@ git clone git@github.com:SaulLawliet/book-cook.git
 cd book-cook
 pip install -r requirements.txt
 
-python -m book_cook <URL>
+python -m book_cook -h
 ```
 
 ## 支持的站点(按字母排序)
 
 - [轻小说文库](https://www.wenku8.net/index.php)
+- [极客时间](https://time.geekbang.org/)
 
 ## 下载制作好的电子书
 

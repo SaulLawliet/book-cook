@@ -1,31 +1,43 @@
 
+import argparse
+import os
 import sys
 
 from .BookCook import BookCook
 
 
-def _parseOpts(argv):
-    return sys.argv[1:]
-
-
 def _real_main(argv=None):
-    args = _parseOpts(argv)
+    parser = argparse.ArgumentParser(usage='%(prog)s [OPTIONS] URL [URL...]')
+    parser.add_argument('url', metavar='URL', type=str)
+    parser.add_argument('--cookie_file', dest='cookie_file', metavar='FILE', help='从浏览器的请求中复制 Header 中的 cookie')
+    parser.add_argument('--store_path', dest='store_path', metavar='path', help='有些站点的某些内容希望永久存储, 用这个参数', )
 
-    url = ''
-    if len(args) > 0:
-        url = args[0]
+    args = parser.parse_args()
 
+    url = args.url
     if not url:
         print('cook-book: error: You must provide at least one URL.')
         sys.exit(1)
 
-    bc_opts = {}
+    if args.cookie_file is not None:
+        if not os.path.exists(args.cookie_file):
+            print('file not exists: %s' % args.cookie_file)
+            sys.exit(1)
+    if args.store_path is not None:
+        if not os.path.exists(args.store_path):
+            os.makedirs(args.store_path)
+
+    bc_opts = {
+        'cookie_file': args.cookie_file,
+        'store_path': args.store_path,
+    }
+
     with BookCook(bc_opts) as bc:
         bc.cook(url)
 
 
 def main(argv=None):
-    _real_main(argv)
+     _real_main(argv)
     # try:
     #     _real_main(argv)
     # except:

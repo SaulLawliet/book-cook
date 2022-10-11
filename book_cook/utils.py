@@ -1,5 +1,7 @@
 import hashlib
 import os
+import sys
+import traceback
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,13 +15,31 @@ _HEADERS = {
 }
 
 
+def get_cache_filename(filename):
+    return _CACHE_DIR + filename
+
+
 def _http_get(url):
     return requests.get(url, headers=_HEADERS)
 
 
 def http_get_content(url, allow_cache=False):
+    return http_get_content_full_info(url, allow_cache)[0]
+
+
+def http_get_content_full_info(url, allow_cache=False):
+    """return: body, md5, file_type"""
+
+    file_type = None
+    filename = url.split('?')[0].split('/')[-1]
+    if '.' in filename:
+        file_type = filename.split('.')[-1]
+
     md5 = hashlib.md5(url.encode('utf-8')).hexdigest()
     cache_file = _CACHE_DIR + md5
+    if file_type is not None:
+        cache_file += '.' + file_type
+
     html = ''
     if allow_cache and os.path.exists(cache_file):
         with open(cache_file, 'rb') as f:
@@ -35,11 +55,15 @@ def http_get_content(url, allow_cache=False):
                 with open(cache_file, 'wb') as f:
                     f.write(html)
                     print('from http: ' + url)
-    return html
+    return html, md5, file_type
 
 
 def url_to_bs(url):
     return BeautifulSoup(http_get_content(url), 'html.parser')
+
+
+def str_to_bs(content):
+    return BeautifulSoup(content, 'html.parser')
 
 
 def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
@@ -70,3 +94,13 @@ def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
         chapter['content'] = '<br>'.join(chapter['content'])
 
     return chapters
+
+def read_file(path):
+    with open(path) as f:
+        return f.read()
+
+def write_string(s, out=None):
+    if out is None:
+        out = sys.stderr
+    out.write(s)
+    out.flush()

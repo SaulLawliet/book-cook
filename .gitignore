@@ -167,3 +167,5 @@ cython_debug/
 
 _cache/
 _output/
+.vscode/
+.DS_store
