@@ -141,4 +141,4 @@ class BookCook(object):
 
         output_name = f'{_OUTPUT_DIR}{ie_result["file_name"]}.epub'
         epub.write_epub(output_name, self.book, {})
-        self.to_stdout('<SUCCESS>', output_name)
+        self.to_stdout('<SUCCESS> %s' % output_name)
