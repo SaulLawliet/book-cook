@@ -36,6 +36,7 @@ python -m book_cook -h
 ## 下载制作好的电子书
 
 - [Google Drive](https://drive.google.com/drive/folders/1f2_lH86DJ1Go-iWv1852mrdD_Wsn4QX5?usp=sharing)
+- 百度网盘: 链接: https://pan.baidu.com/s/1kZTGBidtbZd-JHlhiFJCZw 提取码: n4tv
 
 ## 其他
 
