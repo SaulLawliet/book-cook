@@ -48,3 +48,5 @@ python -m book_cook -h
 如果需要 `新增站点` 或 `有任何的问题`, 请提交 `Issues`. 🥰
 
 如果这个项目有帮到你, 你可以点个 `Star` 或 分享给你的小伙伴. 😘
+
+交流: https://t.me/boookcook_sl
