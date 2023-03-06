@@ -1,7 +1,7 @@
 import hashlib
 import os
+import re
 import sys
-import traceback
 
 import requests
 from bs4 import BeautifulSoup
@@ -80,24 +80,29 @@ def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
     if skip_tail > 0:
         lines = lines[:-skip_tail]
 
+    chapter_flag_re = re.compile(chapter_flag)
     chapters = []
+    last_chapter = None
     for line in lines:
         if len(line.strip()) == 0:
             continue
-        if line.lstrip().startswith(chapter_flag):
+        if chapter_flag_re.match(line.lstrip()):
             last_chapter = {'title': line, 'content': [f'<h3>{line}</h3>']}
             chapters.append(last_chapter)
         else:
-            last_chapter['content'].append(line.replace('  ', '　'))
+            if last_chapter:
+                last_chapter['content'].append(line.replace('  ', '　'))
 
     for chapter in chapters:
         chapter['content'] = '<br>'.join(chapter['content'])
 
     return chapters
 
+
 def read_file(path):
     with open(path) as f:
         return f.read()
+
 
 def write_string(s, out=None):
     if out is None:

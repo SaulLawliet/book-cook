@@ -30,8 +30,9 @@ python -m book_cook -h
 
 > 如果是有版权的书, 一定不要传播哦❤️
 
-- [轻小说文库](https://www.wenku8.net/index.php)
-- [极客时间](https://time.geekbang.org/)
+- [轻小说文库](https://www.wenku8.net/index.php): 2022-09-09
+- [极客时间](https://time.geekbang.org/): 2022-11-10
+- 本地txt文件: 2023-03-06
 
 ## 下载制作好的电子书
 
