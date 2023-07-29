@@ -44,7 +44,7 @@ def http_get_content_full_info(url, allow_cache=False):
     if allow_cache and os.path.exists(cache_file):
         with open(cache_file, 'rb') as f:
             html = f.read()
-            print('from cache: ' + url)
+            print('from cache: ' + url + ', ' + cache_file)
     else:
         resp = _http_get(url)
         if resp.status_code != 200:
@@ -69,11 +69,7 @@ def str_to_bs(content):
 def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
     """将txt切割成不同章节, TODO: 适配更多类型, 需要样本"""
     if type(lines) == str:
-        if lines.index('\r\n') >= 0:
-            lines = lines.split('\r\n')
-        else:
-            lines = lines.split('\n')
-
+        lines = re.split('\r\n|\n', lines)
     if skip_head > 0:
         lines = lines[skip_head:]
 
