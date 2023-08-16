@@ -12,6 +12,8 @@ def _real_main(argv=None):
     parser.add_argument('--cookie_file', dest='cookie_file', metavar='FILE', help='从浏览器的请求中复制 Header 中的 cookie')
     parser.add_argument('--store_path', dest='store_path', metavar='path', help='有些站点的某些内容希望永久存储, 用这个参数', )
     parser.add_argument('--chapter_re', dest='chapter_re', metavar='re', help='章节的正则匹配', )
+    parser.add_argument('--sleep_seconds', dest='sleep_seconds', metavar='seconds', type=int, help='发送请求后睡眠的秒数, 默认上下浮动10%', )
+
 
 
     args = parser.parse_args()
@@ -33,6 +35,7 @@ def _real_main(argv=None):
         'cookie_file': args.cookie_file,
         'store_path': args.store_path,
         'chapter_re': args.chapter_re,
+        'sleep_seconds': args.sleep_seconds,
     }
 
     with BookCook(bc_opts) as bc:

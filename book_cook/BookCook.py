@@ -20,6 +20,8 @@ class BookCook(object):
     _id_hash = {}  # 防止加入重复的资源
 
     def __init__(self, params=None, auto_init=True):
+        utils.BC = self
+
         self.params = params
 
         if auto_init:

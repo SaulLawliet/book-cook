@@ -17,8 +17,7 @@ class TxtIE(InfoExtractor):
         with open(url.replace('file://', '')) as f:
             all_chapters = utils.parse_txt(f.readlines(), chapter_re)
             # 直接每10个合并成一个
-            step = 10
-            for chapters in [all_chapters[i:i+step] for i in range(0, len(all_chapters), step)]:
+            for chapters in utils.split_list(all_chapters, 10):
                 volumes.append({
                     'title': re.findall(chapter_re, chapters[0]['title'])[0] + ' - ' + re.findall(chapter_re, chapters[-1]['title'])[0],
                     'chapters': chapters
