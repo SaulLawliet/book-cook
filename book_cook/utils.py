@@ -97,6 +97,9 @@ def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
         line = re.sub(u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+', '', line)
 
         if chapter_flag_re.match(line.lstrip()):
+            # 尝试跳过一些空章节
+            if last_chapter and len(last_chapter['content']) <= 1:
+                chapters.pop()
             last_chapter = {'title': line, 'content': [f'<h3>{line}</h3>']}
             chapters.append(last_chapter)
         else:
