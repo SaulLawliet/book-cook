@@ -29,10 +29,12 @@ class GeekbangIE(InfoExtractor):
 
         store_path = self._downloader.params.get('store_path')
         if store_path is None:
-            self._downloader.report_warning('[极客时间] 专栏文章的存储目录需要指定\n\t好处1: 接口容易限频, 方便重试\n\t好处2: 会员过期后也有备份')
+            self._downloader.report_warning(
+                '[极客时间] 专栏文章的存储目录需要指定\n\t好处1: 接口容易限频, 方便重试\n\t好处2: 会员过期后也有备份')
             return None
 
-        client = GeekbangClient(self._downloader, utils.read_file(cookie_file).strip(), store_path)
+        client = GeekbangClient(self._downloader, utils.read_file(
+            cookie_file).strip(), store_path)
 
         auth = client.auth()
         if auth['code'] != 0:
@@ -59,13 +61,15 @@ class GeekbangIE(InfoExtractor):
             volumes.append(volume)
             volumes_hash[chapter['id']] = volume
 
-        self._downloader.to_stdout(f"构建章节成功: {list(map(lambda x: x['title'], volumes))}\n")
+        self._downloader.to_stdout(
+            f"构建章节成功: {list(map(lambda x: x['title'], volumes))}\n")
 
         articles = client.articles(product_id, chapter_ids)
         store_dir = '%s-%s' % (product_id, info['data']['title'])
 
         for article in articles['data']['list']:
-            article = client.article_with_store(store_dir, article['id'], article['article_title'])
+            article = client.article_with_store(
+                store_dir, article['id'], article['article_title'])
 
             volumes_hash[article['data']['chapter_id']]['chapters'].append({
                 'title': article['data']['article_title'],
@@ -73,12 +77,9 @@ class GeekbangIE(InfoExtractor):
             })
 
         return {
-            'identifier': title,
             'title': title,
-            'language': 'zh-cn',
             'author': info['data']['author']['name'],
             'cover': info['data']['cover']['rectangle'],
-            'file_name': title,
             'volumes': volumes
         }
 
@@ -94,7 +95,6 @@ class GeekbangClient:
         }
         self.store_path = store_path
 
-
     def auth(self):
         headers = {'Referer': 'https://time.geekbang.org/'}
         headers.update(self.headers)
@@ -103,7 +103,8 @@ class GeekbangClient:
             f'https://account.geekbang.org/serv/v1/user/auth?t={int(time.time() * 1000)}', headers=headers).json()
 
     def info(self, product_id):
-        headers = {'Referer': f'https://time.geekbang.org/column/intro/{product_id}'}
+        headers = {
+            'Referer': f'https://time.geekbang.org/column/intro/{product_id}'}
         headers.update(self.headers)
 
         json = {
@@ -114,7 +115,8 @@ class GeekbangClient:
         return requests.post('https://time.geekbang.org/serv/v3/column/info', json=json, headers=headers).json()
 
     def chapters(self, product_id, cid):
-        headers = {'Referer': f'https://time.geekbang.org/column/intro/{product_id}'}
+        headers = {
+            'Referer': f'https://time.geekbang.org/column/intro/{product_id}'}
         headers.update(self.headers)
 
         json = {
@@ -124,7 +126,8 @@ class GeekbangClient:
         return requests.post('https://time.geekbang.org/serv/v1/chapters', json=json, headers=headers).json()
 
     def articles(self, product_id, chapter_ids):
-        headers = {'Referer': f'https://time.geekbang.org/column/intro/{product_id}'}
+        headers = {
+            'Referer': f'https://time.geekbang.org/column/intro/{product_id}'}
         headers.update(self.headers)
 
         json = {
@@ -141,7 +144,8 @@ class GeekbangClient:
                              headers=headers).json()
 
     def article(self, article_id):
-        headers = {'Referer': f'https://time.geekbang.org/column/article/{article_id}'}
+        headers = {
+            'Referer': f'https://time.geekbang.org/column/article/{article_id}'}
         headers.update(self.headers)
 
         json = {

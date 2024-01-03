@@ -23,60 +23,46 @@ class Po18IE(InfoExtractor):
             'Cookie': utils.read_file(cookie_file).strip()
         }
 
-        info = utils.url_to_bs(URL_PREFIX + book_id, headers)
+        info = utils.url_to_bs(URL_PREFIX + book_id, headers=headers)
         book_name = info.select_one('.book_name').text
         book_author = info.select_one('.book_author').text
 
-        articles = utils.url_to_bs(URL_PREFIX + book_id + '/articles', headers)
+        articles = utils.url_to_bs(
+            URL_PREFIX + book_id + '/articles', headers=headers)
 
         volumes = []
 
-        chapter_list = articles.select('.c_l')
-        # 直接每10个合并成一个
-        for chapters in utils.split_list(chapter_list, 10):
-            volume_title = chapters[0].select_one('.l_counter').text
-            if len(chapters) > 1:
-                volume_title += ' - ' + chapters[-1].select_one('.l_counter').text
-            volume = {
-                'title': volume_title,
-                'chapters': []
+        for c in articles.select('.c_l'):
+            chaptname = c.select_one('.l_chaptname').text
+            chapter = {
+                'title': chaptname,
+                'content': None
             }
-            volumes.append(volume)
+            volumes.append(chapter)
 
-            for c in chapters:
-                chaptname = c.select_one('.l_chaptname').text
-                date = c.select_one('.l_date').text
-                font = c.select_one('.l_font').text
-
-                chapter = {
-                    'title': chaptname,
-                    'content': None
+            date = c.select_one('.l_date').text
+            font = c.select_one('.l_font').text
+            header = f'<p>{date} | {font}<p>'
+            a = c.select_one('a')
+            if a.get('href').startswith('javascript:'):
+                chapter['content'] = f'{header}<h1>{chaptname}</h1><p>需付费：<b>{a.text}</b>'
+            else:
+                article_url = 'https://www.po18.tw' + a.get('href')
+                content_header = {
+                    'Referer': article_url
                 }
-                volume['chapters'].append(chapter)
+                content_header.update(headers)
 
-                header = f'<p>{date} | {font}<p>'
-                a = c.select_one('a')
-                if a.get('href').startswith('javascript:'):
-                    pass
-                    chapter['content'] = f'{header}<h1>{chaptname}</h1><p>{a.text}'
-                else:
-                    article_url = 'https://www.po18.tw' + a.get('href')
-                    content_header = {
-                        'Referer': article_url
-                    }
-                    content_header.update(headers)
-
-                    content = utils.http_get_content(article_url.replace('articles', 'articlescontent'), True, content_header).decode("utf-8")
-                    # 这里要追加一个 '</p>', 原文不是标准的 HTML
-                    lines = list(map(lambda x: re.sub(u'^.*</blockquote>', '', x) + '</p>', content.split('\r')))
-                    chapter['content'] = f'{header}{"".join(lines)}'
+                content = utils.http_get_content(article_url.replace(
+                    'articles', 'articlescontent'), True, content_header).decode("utf-8")
+                # 这里要追加一个 '</p>', 原文不是标准的 HTML
+                lines = list(map(lambda x: re.sub(
+                    u'^.*</blockquote>', '', x) + '</p>', content.split('\r')))
+                chapter['content'] = f'{header}{"".join(lines)}'
 
         return {
-            'identifier': f'{book_name}-{book_author}',
             'title': book_name,
-            'language': 'zh-cn',
             'author': book_author,
             'cover': info.select_one('.book_cover img').get('src'),
-            'file_name': book_name,
             'volumes': volumes
         }

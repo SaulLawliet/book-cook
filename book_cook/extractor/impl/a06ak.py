@@ -24,13 +24,9 @@ class a06akIE(InfoExtractor):
 
         title = book.select_one('.novel_info_title h1').text.strip()
         author = book.select_one('.novel_info_title i a').text.strip()
-        title_author = f'{title} - {author}'
 
         return {
-            'language': 'zh-cn',
-            'identifier': title_author,
-            'title': title_author,
-            'file_name': title,
+            'title': title,
             'author': author,
             'cover': book.select_one('.novel_info_main img').get('src'),
             'volumes': volumes

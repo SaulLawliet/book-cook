@@ -51,7 +51,6 @@ class BookCook(object):
             self.add_info_extractor(ie)
         return ie
 
-
     def to_stdout(self, message):
         output = message + '\n'
         utils.write_string(output, sys.stdout)
@@ -83,7 +82,8 @@ class BookCook(object):
         """处理图片链接"""
         bs = utils.str_to_bs(content)
         for img in bs.select('img'):
-            body, id, file_type = utils.http_get_content_full_info(img['src'], allow_cache=True)
+            body, id, file_type = utils.http_get_content_full_info(
+                img['src'], allow_cache=True)
 
             if id not in self._id_hash:
                 self._id_hash[id] = None
@@ -103,7 +103,8 @@ class BookCook(object):
         return str(bs)
 
     def _epub_create_html(self, title, file_name, content):
-        rtn = epub.EpubHtml(title=title, file_name=file_name, content=self._process_content(content))
+        rtn = epub.EpubHtml(title=title, file_name=file_name,
+                            content=self._process_content(content))
         self.book.add_item(rtn)
         self.book.spine.append(rtn)
         return rtn
@@ -113,16 +114,24 @@ class BookCook(object):
         if ie_result is None:
             return
 
+        if 'language' not in ie_result:
+            ie_result['language'] = 'zh-cn'
+        if 'identifier' not in ie_result:
+            ie_result['identifier'] = f"{ie_result['title']}-{ie_result['author']}"
+        if 'file_name' not in ie_result:
+            ie_result['file_name'] = ie_result['title']
+
         self.book = epub.EpubBook()
 
         self.book.set_identifier(ie_result['identifier'])
-        self.book.set_title(ie_result['title'])
         self.book.set_language(ie_result['language'])
+        self.book.set_title(ie_result['title'])
         self.book.add_author(ie_result['author'])
 
         if 'cover' in ie_result:
             cover_name = 'cover.' + ie_result['cover'].split('.')[-1]
-            self.book.set_cover(cover_name, utils.http_get_content(ie_result['cover'], allow_cache=True))
+            self.book.set_cover(cover_name, utils.http_get_content(
+                ie_result['cover'], allow_cache=True))
 
         self.book.spine.append('nav')
         for i, volume in enumerate(ie_result['volumes']):
@@ -137,7 +146,8 @@ class BookCook(object):
                         chapter['title'], f'v{i}c{j}.xhtml', chapter['content'])
                     self.book.toc[-1][1].append(c)
             else:
-                self.book.toc.append(self._epub_create_html(volume['title'], f'v{i}.xhtml', volume['content']))
+                self.book.toc.append(self._epub_create_html(
+                    volume['title'], f'v{i}.xhtml', volume['content']))
 
         self.book.add_item(epub.EpubNcx())
         self.book.add_item(epub.EpubNav())

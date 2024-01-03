@@ -9,25 +9,16 @@ class TxtIE(InfoExtractor):
     def _real_extract(self, url):
         chapter_re = self._downloader.params.get('chapter_re')
         if not chapter_re:
-            self._downloader.report_warning('[TXT] 由于你没有指定章节的正则匹配(--chapter_re), 默认使用: "第.*章"')
+            self._downloader.report_warning(
+                '[TXT] 由于你没有指定章节的正则匹配(--chapter_re), 默认使用: "第.*章"')
             chapter_re = r'第.*章'
 
         name = url.split('/')[-1].split('.')[0]
-        volumes = []
         with open(url.replace('file://', '')) as f:
-            all_chapters = utils.parse_txt(f.readlines(), chapter_re)
-            # 直接每10个合并成一个
-            for chapters in utils.split_list(all_chapters, 10):
-                volumes.append({
-                    'title': re.findall(chapter_re, chapters[0]['title'])[0] + ' - ' + re.findall(chapter_re, chapters[-1]['title'])[0],
-                    'chapters': chapters
-                })
+            volumes = utils.parse_txt(f.readlines(), chapter_re)
 
         return {
-            'language': 'zh-cn',
-            'identifier': name,
             'title': name,
-            'file_name': name,
             'author': name,
             'volumes': volumes
         }
