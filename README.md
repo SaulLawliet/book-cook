@@ -34,6 +34,7 @@ python -m book_cook -h
 - [极客时间](https://time.geekbang.org/): 2022-11-10
 - 本地txt文件: 2023-03-06
 - [PO18脸红心跳](https://po18.tw/): 2023-08-16
+- [AK小说](https://www.06ak.com/): 2024-01-02
 
 ## 下载制作好的电子书
 

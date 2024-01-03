@@ -73,6 +73,7 @@ class BookCook(object):
             if not ie.suitable(url):
                 continue
             ie = self.get_info_extractor(ie.ie_key())
+            utils.IE = ie
             return self._cook(url, ie)
         else:
             self.report_error('no suitable InfoExtractor for URL %s' % url)
@@ -125,15 +126,18 @@ class BookCook(object):
 
         self.book.spine.append('nav')
         for i, volume in enumerate(ie_result['volumes']):
-            # volume
-            v = self._epub_create_html(
-                volume['title'], f'v{i}.xhtml', f'<h2>{volume["title"]}</h2>')
-            self.book.toc.append([v, []])
-            # chapters
-            for j, chapter in enumerate(volume['chapters']):
-                c = self._epub_create_html(
-                    chapter['title'], f'v{i}c{j}.xhtml', chapter['content'])
-                self.book.toc[-1][1].append(c)
+            if 'chapters' in volume:
+                # volume
+                v = self._epub_create_html(
+                    volume['title'], f'v{i}.xhtml', f'<h2>{volume["title"]}</h2>')
+                self.book.toc.append([v, []])
+                # chapters
+                for j, chapter in enumerate(volume['chapters']):
+                    c = self._epub_create_html(
+                        chapter['title'], f'v{i}c{j}.xhtml', chapter['content'])
+                    self.book.toc[-1][1].append(c)
+            else:
+                self.book.toc.append(self._epub_create_html(volume['title'], f'v{i}.xhtml', volume['content']))
 
         self.book.add_item(epub.EpubNcx())
         self.book.add_item(epub.EpubNav())

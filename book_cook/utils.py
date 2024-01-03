@@ -8,10 +8,6 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
-_CACHE_DIR = '_cache/'
-if not os.path.exists(_CACHE_DIR):
-    os.makedirs(_CACHE_DIR)
-
 _HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36'
 }
@@ -19,8 +15,15 @@ _HEADERS = {
 # BookCook instance
 BC = None
 
+# BookCook IE
+IE = None
+
+
 def get_cache_filename(filename):
-    return _CACHE_DIR + filename
+    dir = f'_cache/{IE.ie_key()}/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    return dir + filename
 
 
 def _http_get(url, headers=_HEADERS):
@@ -47,7 +50,7 @@ def http_get_content_full_info(url, allow_cache=False, headers=_HEADERS):
         file_type = filename.split('.')[-1]
 
     md5 = hashlib.md5(url.encode('utf-8')).hexdigest()
-    cache_file = _CACHE_DIR + md5
+    cache_file = get_cache_filename(md5)
     if file_type is not None:
         cache_file += '.' + file_type
 
@@ -55,7 +58,7 @@ def http_get_content_full_info(url, allow_cache=False, headers=_HEADERS):
     if allow_cache and os.path.exists(cache_file):
         with open(cache_file, 'rb') as f:
             html = f.read()
-            print('from cache: ' + url + ', ' + cache_file)
+            print('from cache: ' + url + ' < ' + cache_file)
     else:
         resp = _http_get(url, headers=headers)
         if resp.status_code != 200:
@@ -65,16 +68,19 @@ def http_get_content_full_info(url, allow_cache=False, headers=_HEADERS):
             if allow_cache:
                 with open(cache_file, 'wb') as f:
                     f.write(html)
-            print('from http: ' + url)
+                print('from http: ' + url + ' > ' + cache_file)
+            else:
+                print('from http: ' + url)
     return html, md5, file_type
 
 
-def url_to_bs(url, headers=_HEADERS):
-    return BeautifulSoup(http_get_content(url, headers=headers), 'html.parser')
+def url_to_bs(url, allow_cache=False, headers=_HEADERS):
+    return BeautifulSoup(http_get_content(url, allow_cache=allow_cache, headers=headers), 'html.parser')
 
 
 def str_to_bs(content):
     return BeautifulSoup(content, 'html.parser')
+
 
 def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
     """将txt切割成不同章节, TODO: 适配更多类型, 需要样本"""
@@ -94,7 +100,8 @@ def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
             continue
         # ValueError: All strings must be XML compatible: Unicode or ASCII, no NULL bytes or control characters
         # https://stackoverflow.com/a/25920392
-        line = re.sub(u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+', '', line)
+        line = re.sub(
+            u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+', '', line)
 
         if chapter_flag_re.match(line.lstrip()):
             # 尝试跳过一些空章节
