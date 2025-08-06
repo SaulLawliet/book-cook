@@ -2,6 +2,7 @@ import hashlib
 import os
 import random
 import re
+import subprocess
 import sys
 import time
 
@@ -9,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 
 _HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36'
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
 }
 
 # BookCook instance
@@ -20,18 +21,18 @@ IE = None
 
 
 def get_cache_filename(filename):
-    dir = f'_cache/{IE.ie_key()}/'
+    dir = f"_cache/{IE.ie_key()}/"
     if not os.path.exists(dir):
         os.makedirs(dir)
     return dir + filename
 
 
 def _http_get(url, headers=_HEADERS):
-    if BC.params['sleep_seconds']:
-        seconds = BC.params['sleep_seconds']
+    if BC.params["sleep_seconds"]:
+        seconds = BC.params["sleep_seconds"]
         step = max(int(seconds * 0.3), 3)
         sleep = random.randint(seconds, seconds + step)
-        print(f'开启了请求限流, 本次暂停{sleep}s.')
+        print(f"开启了请求限流, 本次暂停{sleep}s.")
         time.sleep(sleep)
 
     return requests.get(url, headers=headers)
@@ -45,47 +46,66 @@ def http_get_content_full_info(url, allow_cache=False, headers=_HEADERS):
     """return: body, md5, file_type"""
 
     file_type = None
-    filename = url.split('?')[0].split('/')[-1]
-    if '.' in filename:
-        file_type = filename.split('.')[-1]
+    filename = url.split("?")[0].split("/")[-1]
+    if "." in filename:
+        file_type = filename.split(".")[-1]
 
-    md5 = hashlib.md5(url.encode('utf-8')).hexdigest()
+    md5 = hashlib.md5(url.encode("utf-8")).hexdigest()
     cache_file = get_cache_filename(md5)
     if file_type is not None:
-        cache_file += '.' + file_type
+        cache_file += "." + file_type
 
-    html = ''
+    html = ""
     if allow_cache and os.path.exists(cache_file):
-        with open(cache_file, 'rb') as f:
+        with open(cache_file, "rb") as f:
             html = f.read()
-            print('from cache: ' + url + ' < ' + cache_file)
+            print("from cache: " + url + " < " + cache_file)
     else:
         resp = _http_get(url, headers=headers)
         if resp.status_code != 200:
-            print(url, 'STATUS:', resp.status_code)
+            print(url, "STATUS:", resp.status_code, "cache: ", cache_file)
         else:
             html = resp.content
             if allow_cache:
-                with open(cache_file, 'wb') as f:
+                with open(cache_file, "wb") as f:
                     f.write(html)
-                print('from http: ' + url + ' > ' + cache_file)
+                print("from http: " + url + " > " + cache_file)
             else:
-                print('from http: ' + url)
+                print("from http: " + url)
     return html, md5, file_type
 
 
+def fetch_with_curl(url):
+    result = subprocess.run(
+        ["curl", "-s", url],
+        capture_output=True,
+    )
+
+    if result.returncode == 0:
+        print("from curl: " + url)
+        return result.stdout
+    else:
+        raise Exception(f"Error: {result.stderr}")
+
+
 def url_to_bs(url, allow_cache=False, headers=_HEADERS):
-    return BeautifulSoup(http_get_content(url, allow_cache=allow_cache, headers=headers), 'html.parser')
+    return BeautifulSoup(
+        http_get_content(url, allow_cache=allow_cache, headers=headers), "html.parser"
+    )
+
+
+def curl_to_bs(url):
+    return BeautifulSoup(fetch_with_curl(url), "html.parser")
 
 
 def str_to_bs(content):
-    return BeautifulSoup(content, 'html.parser')
+    return BeautifulSoup(content, "html.parser")
 
 
 def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
     """将txt切割成不同章节, TODO: 适配更多类型, 需要样本"""
     if type(lines) == str:
-        lines = re.split('\r\n|\n', lines)
+        lines = re.split("\r\n|\n", lines)
     if skip_head > 0:
         lines = lines[skip_head:]
 
@@ -101,20 +121,23 @@ def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
         # ValueError: All strings must be XML compatible: Unicode or ASCII, no NULL bytes or control characters
         # https://stackoverflow.com/a/25920392
         line = re.sub(
-            u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+', '', line)
+            "[^\u0020-\ud7ff\u0009\u000a\u000d\ue000-\ufffd\U00010000-\U0010ffff]+",
+            "",
+            line,
+        )
 
         if chapter_flag_re.match(line.lstrip()):
             # 尝试跳过一些空章节
-            if last_chapter and len(last_chapter['content']) <= 1:
+            if last_chapter and len(last_chapter["content"]) <= 1:
                 chapters.pop()
-            last_chapter = {'title': line, 'content': [f'<h3>{line}</h3>']}
+            last_chapter = {"title": line, "content": [f"<h3>{line}</h3>"]}
             chapters.append(last_chapter)
         else:
             if last_chapter:
-                last_chapter['content'].append(line.replace('  ', '　'))
+                last_chapter["content"].append(line.replace("  ", "　"))
 
     for chapter in chapters:
-        chapter['content'] = '<br>'.join(chapter['content'])
+        chapter["content"] = "<br>".join(chapter["content"])
 
     return chapters
 
@@ -133,4 +156,4 @@ def write_string(s, out=None):
 
 def split_list(list, step):
     """将list变成等长的多个数组"""
-    return [list[i:i+step] for i in range(0, len(list), step)]
+    return [list[i : i + step] for i in range(0, len(list), step)]
