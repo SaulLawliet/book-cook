@@ -2,12 +2,11 @@ import re
 
 
 class InfoExtractor(object):
-
     _downloader = None
 
     @classmethod
     def suitable(cls, url):
-        if '_VALID_URL_RE' not in cls.__dict__:
+        if "_VALID_URL_RE" not in cls.__dict__:
             cls._VALID_URL_RE = re.compile(cls._VALID_URL)
         return cls._VALID_URL_RE.match(url) is not None
 

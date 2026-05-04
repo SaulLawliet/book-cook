@@ -1,30 +1,37 @@
 import hashlib
+import logging
 import os
 import random
 import re
 import subprocess
 import sys
 import time
+import colorlog
+from fake_useragent import UserAgent
 
 import requests
 from bs4 import BeautifulSoup
 
+
 _HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+    "User-Agent": UserAgent(platforms="desktop").random,
 }
 
 # BookCook instance
 BC = None
 
-# BookCook IE
-IE = None
+# 缓存命名空间, 由 extractor 定义
+CACHE_NAMESPACE = None
 
 
-def get_cache_filename(filename):
-    dir = f"_cache/{IE.ie_key()}/"
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    return dir + filename
+def get_cache_path(filename):
+    if not CACHE_NAMESPACE:
+        raise ValueError("需设置 utils.CACHE_NAMESPACE 才能使用缓存")
+
+    cache_dir = f"_cache/{CACHE_NAMESPACE}/"
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+    return cache_dir + filename
 
 
 def _http_get(url, headers=_HEADERS):
@@ -32,10 +39,9 @@ def _http_get(url, headers=_HEADERS):
         seconds = BC.params["sleep_seconds"]
         step = max(int(seconds * 0.3), 3)
         sleep = random.randint(seconds, seconds + step)
-        print(f"开启了请求限流, 本次暂停{sleep}s.")
+        logger.info(f"开启了请求限流, 本次暂停{sleep}s.")
         time.sleep(sleep)
-
-    return requests.get(url, headers=headers)
+    return requests.get(url, headers=_HEADERS | headers)
 
 
 def http_get_content(url, allow_cache=False, headers=_HEADERS):
@@ -51,27 +57,29 @@ def http_get_content_full_info(url, allow_cache=False, headers=_HEADERS):
         file_type = filename.split(".")[-1]
 
     md5 = hashlib.md5(url.encode("utf-8")).hexdigest()
-    cache_file = get_cache_filename(md5)
-    if file_type is not None:
-        cache_file += "." + file_type
+    cache_path = None
+    if allow_cache:
+        cache_path = get_cache_path(md5)
+        if file_type is not None:
+            cache_path += "." + file_type
 
     html = ""
-    if allow_cache and os.path.exists(cache_file):
-        with open(cache_file, "rb") as f:
+    if cache_path and os.path.exists(cache_path):
+        with open(cache_path, "rb") as f:
             html = f.read()
-            print("from cache: " + url + " < " + cache_file)
+            logger.debug("from cache: " + url + " < " + cache_path)
     else:
         resp = _http_get(url, headers=headers)
         if resp.status_code != 200:
-            print(url, "STATUS:", resp.status_code, "cache: ", cache_file)
+            logger.error(f"{url} STATUS: {resp.status_code} cache: {cache_path}")
         else:
             html = resp.content
-            if allow_cache:
-                with open(cache_file, "wb") as f:
+            if cache_path:
+                with open(cache_path, "wb") as f:
                     f.write(html)
-                print("from http: " + url + " > " + cache_file)
+                logger.debug("from http: " + url + " > " + cache_path)
             else:
-                print("from http: " + url)
+                logger.debug("from http: " + url)
     return html, md5, file_type
 
 
@@ -82,9 +90,11 @@ def fetch_with_curl(url):
     )
 
     if result.returncode == 0:
-        print("from curl: " + url)
+        logger.debug("from curl: " + url)
         return result.stdout
+
     else:
+        logger.error(f"Error fetching {url}: {result.stderr}")
         raise Exception(f"Error: {result.stderr}")
 
 
@@ -104,7 +114,7 @@ def str_to_bs(content):
 
 def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
     """将txt切割成不同章节, TODO: 适配更多类型, 需要样本"""
-    if type(lines) == str:
+    if isinstance(lines, str):
         lines = re.split("\r\n|\n", lines)
     if skip_head > 0:
         lines = lines[skip_head:]
@@ -157,3 +167,22 @@ def write_string(s, out=None):
 def split_list(list, step):
     """将list变成等长的多个数组"""
     return [list[i : i + step] for i in range(0, len(list), step)]
+
+
+def get_logger(name=None):
+    # 用“/”的话方便在编辑器中定位到文件
+    logger = logging.getLogger(name.replace(".", "/") if name else None)
+    if not logger.handlers:
+        handler = colorlog.StreamHandler()
+        handler.setFormatter(
+            colorlog.ColoredFormatter(
+                "%(log_color)s[%(levelname)s] %(name)-s:%(lineno)d: %(message)s",
+            )
+        )
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+        logger.propagate = False
+    return logger
+
+
+logger = get_logger(__name__)

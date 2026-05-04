@@ -1,0 +1,13 @@
+[project]
+name = "book-cook"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "colorlog>=6.10.1",
+    "ebooklib>=0.20",
+    "fake-useragent>=2.2.0",
+    "requests>=2.33.1",
+]

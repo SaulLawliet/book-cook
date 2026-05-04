@@ -2,6 +2,8 @@ from urllib.parse import urljoin
 from ... import utils
 from ..common import InfoExtractor
 
+logger = utils.get_logger(__name__)
+
 
 class WenKu8IE(InfoExtractor):
     _VALID_URL = r"https://www.wenku8.net/book/\d+.htm"
@@ -12,8 +14,12 @@ class WenKu8IE(InfoExtractor):
 
         id = url.split("/")[-1].split(".")[0]
 
+        utils.CACHE_NAMESPACE = f"{self.ie_key()}/{id}"
+
         # ['Re:从零开始的异世界生活 ', ' 长月达平 ', ' MF文库J ', ' 轻小说文库']
         info = bs.title.text.split("-")
+
+        logger.info(info)
 
         toc_url = bs.select_one("span:nth-child(1) div a").get("href")
         toc_bs = utils.curl_to_bs(urljoin(url, toc_url))
