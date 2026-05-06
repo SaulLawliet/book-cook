@@ -32,6 +32,7 @@ uv run -m book_cook -h
 - [轻小说文库](https://www.wenku8.net/index.php): 2022-09-09
 - 本地txt文件: 2023-03-06
 - [PO18脸红心跳](https://po18.tw/): 2023-08-16
+- [笔趣阁](https://www.biquge.tw/): 2025-05-06
 
 ## 下载制作好的电子书
 

@@ -1,6 +1,8 @@
 from book_cook import utils
 from book_cook.extractor.common import InfoExtractor
 
+logger = utils.get_logger(__name__)
+
 
 class TxtIE(InfoExtractor):
     _VALID_URL = r"file://.*.txt"
@@ -8,7 +10,7 @@ class TxtIE(InfoExtractor):
     def _real_extract(self, url):
         chapter_re = self._downloader.params.get("chapter_re")
         if not chapter_re:
-            self._downloader.report_warning(
+            logger.warning(
                 '[TXT] 由于你没有指定章节的正则匹配(--chapter_re), 默认使用: "第.*章"'
             )
             chapter_re = r"第.*章"

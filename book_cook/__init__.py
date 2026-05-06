@@ -42,13 +42,13 @@ def _real_main(argv=None):
     url = args.url
     if not url:
         logger.error("You must provide at least one URL.")
-
         sys.exit(1)
 
     if args.cookie_file is not None:
         if not os.path.exists(args.cookie_file):
             logger.error("Cookie file not exists: %s" % args.cookie_file)
             sys.exit(1)
+
     if args.store_path is not None:
         if not os.path.exists(args.store_path):
             os.makedirs(args.store_path)

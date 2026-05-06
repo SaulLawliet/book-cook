@@ -57,6 +57,11 @@ def http_get_content_full_info(url, allow_cache=False, headers=_HEADERS):
         file_type = filename.split(".")[-1]
 
     md5 = hashlib.md5(url.encode("utf-8")).hexdigest()
+
+    if url.startswith("_cache/"):
+        with open(url, "rb") as f:
+            return f.read(), md5, file_type
+
     cache_path = None
     if allow_cache:
         cache_path = get_cache_path(md5)
@@ -137,6 +142,7 @@ def parse_txt(lines, chapter_flag, skip_head=0, skip_tail=0):
         )
 
         if chapter_flag_re.match(line.lstrip()):
+            line = line.lstrip()
             # 尝试跳过一些空章节
             if last_chapter and len(last_chapter["content"]) <= 1:
                 chapters.pop()

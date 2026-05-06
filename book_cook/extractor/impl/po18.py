@@ -16,7 +16,7 @@ class Po18IE(InfoExtractor):
 
         cookie_file = self._downloader.params.get("cookie_file")
         if cookie_file is None:
-            self._downloader.report_error("[PO18] 需要指定 <COOKIE>")
+            logger.error("[PO18] 需要指定 <COOKIE>")
             return None
 
         headers = {"Cookie": utils.read_file(cookie_file).strip()}

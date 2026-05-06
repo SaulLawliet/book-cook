@@ -63,7 +63,7 @@ class BookCook(object):
             utils.IE = ie
             return self._cook(url, ie)
         else:
-            self.report_error("no suitable InfoExtractor for URL %s" % url)
+            logger.error("no suitable InfoExtractor for URL %s" % url)
             sys.exit(1)
 
     def _process_content(self, content):
